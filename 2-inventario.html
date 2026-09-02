@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Verificacion de inventario</title>
+<style>
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; margin: 0; }
+body {
+  background: #fff; color: #141414;
+  font-family: Roboto, "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+  font-size: 17px; line-height: 1.4;
+  display: flex; flex-direction: column; overflow: hidden;
+}
+
+#barra { background: #141414; color: #fff; padding: 10px 14px 0 14px; flex: 0 0 auto; }
+#barra .lin { display: flex; justify-content: space-between; align-items: baseline; }
+#barra .lin b { font-size: 22px; }
+#barra .lin span { font-size: 13px; color: #b9b9b9; }
+#progreso { height: 6px; background: #3a3a3a; margin-top: 8px; }
+#progreso i { display: block; height: 100%; background: #ffd400; width: 0; transition: width .18s; }
+
+#zona { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 14px; }
+
+.matricula { font-size: 40px; font-weight: 700; letter-spacing: -.01em; line-height: 1; margin: 2px 0 0 0; }
+.rotulo { font-size: 12px; color: #6a6a6a; letter-spacing: .08em; }
+
+.dato-ver { border-top: 3px solid #141414; margin-top: 16px; padding-top: 10px; }
+.dato-ver.corregido { border-color: #a8720a; background: #fdf6e3; padding: 10px; margin-left: -4px; margin-right: -4px; }
+.sku-num {
+  font-family: "Roboto Mono", Consolas, monospace;
+  font-size: 27px; font-weight: 700; letter-spacing: .02em; line-height: 1.15; word-spacing: .35em;
+}
+.sku-num.tachado { font-size: 19px; text-decoration: line-through; color: #8a8a8a; font-weight: 400; }
+.desc { font-size: 15px; color: #3a3a3a; margin-top: 2px; }
+.uds { display: flex; align-items: baseline; gap: 10px; }
+.uds b { font-size: 42px; font-weight: 700; line-height: 1; }
+.uds b.tachado { font-size: 24px; text-decoration: line-through; color: #8a8a8a; font-weight: 400; }
+.uds span { font-size: 14px; color: #5a5a5a; }
+
+.campo-esc {
+  width: 100%; font-family: "Roboto Mono", Consolas, monospace;
+  font-size: 22px; padding: 18px 12px; text-align: center;
+  border: 3px solid #ffd400; background: #fffbe6;
+}
+.campo-esc:focus { outline: 0; border-color: #0b7a3b; background: #fff; }
+#campoUds {
+  width: 100%; font-size: 52px; font-weight: 700; font-family: inherit;
+  text-align: center; padding: 10px; margin-top: 12px;
+  border: 3px solid #141414; background: #fffbe6; -moz-appearance: textfield;
+}
+#campoUds::-webkit-inner-spin-button, #campoUds::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+#campoUds:focus { outline: 0; border-color: #0b7a3b; background: #fff; }
+
+.espera { text-align: center; padding: 26px 8px; }
+.espera h2 { font-size: 25px; margin: 10px 0 4px 0; }
+.espera p { color: #5a5a5a; font-size: 15px; margin: 0 0 16px 0; }
+
+#acciones { flex: 0 0 auto; display: flex; gap: 2px; padding: 2px; background: #e8e6e1; }
+#acciones button {
+  flex: 1 1 0; min-height: 76px; font-family: inherit;
+  font-size: 19px; font-weight: 700; line-height: 1.15; border: 0; cursor: pointer; padding: 10px 6px;
+}
+#acciones button:focus-visible { outline: 4px solid #141414; outline-offset: -6px; }
+#acciones button.bt-sec { flex: 0 1 27%; font-size: 15px; }
+.bt-ok { background: #0b7a3b; color: #fff; }
+.bt-mal { background: #c6250e; color: #fff; }
+.bt-sec { background: #fff; color: #141414; }
+.bt-ppal { background: #141414; color: #fff; }
+
+.opcion {
+  display: block; width: 100%; text-align: left; min-height: 74px;
+  font-family: inherit; font-size: 19px; font-weight: 700;
+  border: 2px solid #141414; background: #fff; margin-bottom: 8px; padding: 12px 14px; cursor: pointer;
+}
+.opcion small { display: block; font-size: 14px; font-weight: 400; color: #5a5a5a; margin-top: 2px; }
+.opcion:active { background: #ffd400; }
+
+#aviso {
+  position: fixed; left: 0; right: 0; bottom: 82px; padding: 14px 16px;
+  font-weight: 700; color: #fff; background: #0b7a3b;
+  transform: translateY(160%); visibility: hidden;
+  transition: transform .2s, visibility .2s; z-index: 5;
+}
+#aviso.ver { transform: translateY(0); visibility: visible; }
+#aviso.rojo { background: #c6250e; }
+#aviso.amar { background: #ffd400; color: #141414; }
+
+.res-num { display: flex; gap: 18px; margin: 8px 0 16px 0; }
+.res-num div b { display: block; font-size: 32px; line-height: 1; }
+.res-num div span { font-size: 13px; color: #5a5a5a; }
+.fila-res { border-top: 1px solid #e8e6e1; padding: 9px 0; font-size: 14px; }
+.fila-res b { font-family: "Roboto Mono", Consolas, monospace; font-size: 15px; }
+.fila-res em { font-style: normal; color: #c6250e; font-weight: 700; }
+#salida {
+  width: 100%; height: 140px; font-family: "Roboto Mono", Consolas, monospace;
+  font-size: 11px; border: 1px solid #e8e6e1; background: #f6f5f2; padding: 8px; margin-top: 10px;
+}
+.aviso-carga { background: #fdf6e3; border-left: 8px solid #a8720a; padding: 12px; margin-bottom: 14px; font-size: 15px; }
+</style>
+</head>
+<body>
+
+<div id="barra">
+  <div class="lin"><b id="contador">0 / 0</b><span id="titulo">Inventario</span></div>
+  <div id="progreso"><i></i></div>
+</div>
+<div id="zona"></div>
+<div id="acciones"></div>
+<div id="aviso"></div>
+
+<script>
+/* Sintaxis antigua a proposito: debe arrancar tambien en un WebView desactualizado. */
+(function () {
+  "use strict";
+
+  /* ====== AJUSTES A CONFIRMAR CON TUS ETIQUETAS REALES ======
+     Matricula y SKU son ambos Code 128, asi que se distinguen por longitud.
+     Si en tu almacen pueden tener otra longitud, cambia estos dos numeros. */
+  var LARGO_MATRICULA = 10;
+  var LARGO_SKU = 14;
+
+  var datos = null;
+  var registro = {};
+  var actual = null;
+  var correccion = null;
+  var pantalla = "carga";
+  var porMatricula = {};
+  var skusConocidos = {};
+
+  function id(x) { return document.getElementById(x); }
+  function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+  /* 14 digitos seguidos son ilegibles de un vistazo; agrupados de cuatro
+     el operario puede compararlos con la etiqueta sin equivocarse. */
+  function agrupa(s) { return String(s).replace(/(.{4})/g, "$1 ").trim(); }
+  /* Los lectores GS1 pueden emitir caracteres de control invisibles. */
+  function limpia(s) { return String(s || "").replace(/[^0-9A-Za-z]/g, "").toUpperCase(); }
+  function cuenta(o) { var n = 0; for (var k in o) if (o.hasOwnProperty(k)) n++; return n; }
+
+  /* ================= almacenamiento silencioso ================= */
+  var db = null;
+  function abreDB(listo) {
+    if (!window.indexedDB) { listo(); return; }
+    var r = indexedDB.open("verificacion", 1);
+    r.onupgradeneeded = function (e) { e.target.result.createObjectStore("sesion", { keyPath: "id" }); };
+    r.onsuccess = function (e) { db = e.target.result; listo(); };
+    r.onerror = function () { listo(); };
+  }
+  function guarda() {
+    var p = { id: 1, registro: registro, inventario: datos ? datos.inventario : "", hora: Date.now() };
+    if (db) { try { db.transaction("sesion", "readwrite").objectStore("sesion").put(p); } catch (e) {} }
+    try { localStorage.setItem("ver_sesion", JSON.stringify(p)); } catch (e) {}
+  }
+  function leeLS() { try { return JSON.parse(localStorage.getItem("ver_sesion")); } catch (e) { return null; } }
+  function recupera(listo) {
+    if (db) {
+      var g = db.transaction("sesion", "readonly").objectStore("sesion").get(1);
+      g.onsuccess = function () { listo(g.result || leeLS()); };
+      g.onerror = function () { listo(leeLS()); };
+    } else { listo(leeLS()); }
+  }
+
+  var tAviso;
+  function avisa(t, c) {
+    var a = id("aviso");
+    a.textContent = t; a.className = "ver " + (c || "");
+    clearTimeout(tAviso);
+    tAviso = setTimeout(function () { a.className = ""; }, 2400);
+  }
+
+  /* ================= carga ================= */
+  function indexa() {
+    porMatricula = {}; skusConocidos = {};
+    for (var i = 0; i < datos.lineas.length; i++) {
+      var l = datos.lineas[i];
+      porMatricula[limpia(l.matricula)] = l;
+      skusConocidos[limpia(l.sku)] = l.descripcion || "";
+    }
+  }
+  function arranca() {
+    if (window.fetch) {
+      fetch("./datos-ejemplo.json").then(function (r) { if (!r.ok) throw 0; return r.json(); })
+        .then(function (j) { datos = j; indexa(); trasCargar(); })["catch"](pideFichero);
+    } else { pideFichero(); }
+  }
+  function pideFichero() {
+    pantalla = "fichero";
+    id("contador").textContent = "-";
+    id("zona").innerHTML =
+      '<div class="aviso-carga">No se ha podido leer <b>datos-ejemplo.json</b> automaticamente. ' +
+      'Suele pasar al abrir el HTML directamente desde la memoria del terminal en vez de desde un servidor. ' +
+      'Selecciona el fichero a mano para seguir probando.</div>' +
+      '<input type="file" id="fich" accept=".json,application/json" style="font-size:16px">';
+    id("acciones").innerHTML = '';
+    id("fich").onchange = function (e) {
+      var f = e.target.files[0]; if (!f) return;
+      var fr = new FileReader();
+      fr.onload = function () {
+        try { datos = JSON.parse(fr.result); indexa(); trasCargar(); }
+        catch (err) { avisa("El fichero no es un JSON valido", "rojo"); }
+      };
+      fr.readAsText(f);
+    };
+  }
+  function trasCargar() {
+    recupera(function (g) {
+      if (g && g.registro && cuenta(g.registro) > 0 && g.inventario === datos.inventario) {
+        registro = g.registro;
+        avisa("Recuperado: " + cuenta(registro) + " matriculas ya revisadas", "amar");
+      }
+      id("titulo").textContent = datos.inventario || "Inventario";
+      verEspera();
+    });
+  }
+
+  function barra() {
+    var h = cuenta(registro), t = datos ? datos.lineas.length : 0;
+    id("contador").textContent = h + " / " + t;
+    id("progreso").firstChild.style.width = t ? (h * 100 / t) + "%" : "0";
+  }
+
+  /* ================= espera de matricula ================= */
+  function verEspera() {
+    pantalla = "espera"; actual = null; correccion = null;
+    barra();
+    var quedan = pendientes();
+    id("zona").innerHTML =
+      '<div class="espera">' +
+        '<div class="rotulo">DISPARA A LA MATRICULA</div>' +
+        '<h2>Siguiente palet</h2>' +
+        '<p>' + (quedan ? "Quedan " + quedan + " por revisar" : "Todo revisado. Puedes cerrar el inventario.") + '</p>' +
+        '<input type="text" id="campoEsc" class="campo-esc" autocomplete="off" autocorrect="off" ' +
+        'autocapitalize="characters" spellcheck="false" placeholder="Matricula">' +
+      '</div>';
+    id("acciones").innerHTML =
+      '<button class="bt-sec" id="b-pend">Pendientes</button>' +
+      '<button class="bt-ppal" id="b-cerrar">Cerrar inventario</button>';
+    id("b-pend").onclick = verPendientes;
+    id("b-cerrar").onclick = verResumen;
+    engancha(recibeMatricula);
+  }
+  function pendientes() { return datos.lineas.length - cuenta(registro); }
+
+  /* El campo se mantiene enfocado: el lector emite pulsaciones de teclado
+     y sin foco se pierden. El operario nunca toca la pantalla para escanear. */
+  function engancha(alLeer) {
+    var c = id("campoEsc");
+    if (!c) return;
+    c.focus();
+    c.onblur = function () { setTimeout(function () { if (id("campoEsc")) c.focus(); }, 60); };
+    document.onclick = function () { if (id("campoEsc")) c.focus(); };
+    c.onkeydown = function (e) {
+      if (e.key === "Enter" || e.keyCode === 13) { e.preventDefault(); var v = c.value; c.value = ""; alLeer(limpia(v)); }
+    };
+    /* Respaldo por si el lector no envia Enter al final. */
+    c.oninput = function () {
+      clearTimeout(c._t);
+      var v = c.value;
+      c._t = setTimeout(function () {
+        if (limpia(v).length >= LARGO_MATRICULA && c.value === v) { c.value = ""; alLeer(limpia(v)); }
+      }, 500);
+    };
+  }
+
+  function recibeMatricula(cod) {
+    if (!cod) return;
+    if (cod.length === LARGO_SKU && !porMatricula[cod]) {
+      avisa("Eso es un SKU. Dispara a la matricula del palet", "amar");
+      return;
+    }
+    var l = porMatricula[cod];
+    if (!l) { desconocida(cod); return; }
+    if (registro[cod]) avisa("Esta matricula ya se reviso", "amar");
+    verVerificacion(l);
+  }
+  function desconocida(cod) {
+    registro[cod] = { estado: "Matricula no esta en el listado", skuReal: null, udsReales: null,
+                      hora: new Date().toISOString(), fuera: true, codigo: cod };
+    guarda();
+    avisa("Matricula desconocida anotada", "rojo");
+    verEspera();
+  }
+
+  /* ================= verificacion ================= */
+  function verVerificacion(l) {
+    pantalla = "verificar"; actual = l;
+    if (!correccion) correccion = { sku: null, uds: null, siguiente: null };
+    document.onclick = null;
+
+    var skuFinal = correccion.sku || l.sku;
+    var udsFinal = correccion.uds !== null ? correccion.uds : l.teoricas;
+    var hayCorr = correccion.sku || correccion.uds !== null;
+
+    var h = '<div class="rotulo">MATRICULA</div><div class="matricula">' + esc(l.matricula) + '</div>';
+
+    h += '<div class="dato-ver' + (correccion.sku ? ' corregido' : '') + '">' +
+         '<div class="rotulo">' + (correccion.sku ? 'SKU CORREGIDO' : 'SKU') + '</div>';
+    if (correccion.sku) h += '<div class="sku-num tachado">' + esc(agrupa(l.sku)) + '</div>';
+    h += '<div class="sku-num">' + esc(agrupa(skuFinal)) + '</div>' +
+         '<div class="desc">' + esc(correccion.sku ? (skusConocidos[correccion.sku] || "SKU fuera del listado")
+                                                   : (l.descripcion || "")) + '</div></div>';
+
+    h += '<div class="dato-ver' + (correccion.uds !== null ? ' corregido' : '') + '">' +
+         '<div class="rotulo">' + (correccion.uds !== null ? 'UNIDADES CORREGIDAS' : 'UNIDADES TEORICAS') +
+         '</div><div class="uds">';
+    if (correccion.uds !== null) h += '<b class="tachado">' + l.teoricas + '</b>';
+    h += '<b>' + udsFinal + '</b><span>unidades</span></div></div>';
+
+    id("zona").innerHTML = h;
+    id("acciones").innerHTML =
+      '<button class="bt-mal" id="b-corr">Corregir</button>' +
+      '<button class="bt-ok" id="b-ok">' + (hayCorr ? "Guardar" : "Correcto") + '</button>';
+    id("b-corr").onclick = verOpciones;
+    id("b-ok").onclick = cierra;
+  }
+
+  function cierra() {
+    var m = limpia(actual.matricula);
+    var hayCorr = correccion && (correccion.sku || correccion.uds !== null);
+    registro[m] = {
+      estado: hayCorr ? "Corregido" : "Correcto",
+      skuReal: correccion && correccion.sku ? correccion.sku : null,
+      udsReales: correccion && correccion.uds !== null ? correccion.uds : null,
+      hora: new Date().toISOString()
+    };
+    guarda();
+    avisa(hayCorr ? "Correccion guardada" : "Correcto", hayCorr ? "amar" : "");
+    verEspera();
+  }
+
+  function verOpciones() {
+    pantalla = "opciones";
+    document.onclick = null;
+    id("zona").innerHTML =
+      '<div class="rotulo">MATRICULA ' + esc(actual.matricula) + '</div>' +
+      '<h2 style="font-size:21px;margin:6px 0 14px 0">Que hay que corregir</h2>' +
+      '<button class="opcion" id="o-sku">Solo el SKU<small>El palet lleva otro producto</small></button>' +
+      '<button class="opcion" id="o-uds">Solo las unidades<small>El producto es correcto, la cantidad no</small></button>' +
+      '<button class="opcion" id="o-amb">Las dos cosas<small>Primero el SKU, despues las unidades</small></button>';
+    id("acciones").innerHTML = '<button class="bt-sec" id="b-atr">Atras</button>';
+    id("b-atr").onclick = function () { verVerificacion(actual); };
+    id("o-sku").onclick = function () { correccion.siguiente = null; pideSku(); };
+    id("o-uds").onclick = function () { correccion.siguiente = null; pideUds(); };
+    id("o-amb").onclick = function () { correccion.siguiente = "uds"; pideSku(); };
+  }
+
+  /* El SKU se corrige disparando el lector, nunca tecleando: son 14 digitos
+     y teclearlos con guantes es la principal fuente de error. */
+  function pideSku() {
+    pantalla = "corr-sku";
+    id("zona").innerHTML =
+      '<div class="espera">' +
+        '<div class="rotulo">DISPARA AL SKU DEL PRODUCTO</div>' +
+        '<h2>SKU real</h2>' +
+        '<p>El teorico es ' + esc(agrupa(actual.sku)) + '</p>' +
+        '<input type="text" id="campoEsc" class="campo-esc" autocomplete="off" autocorrect="off" ' +
+        'autocapitalize="characters" spellcheck="false" placeholder="SKU">' +
+      '</div>';
+    id("acciones").innerHTML = '<button class="bt-sec" id="b-atr">Atras</button>';
+    id("b-atr").onclick = verOpciones;
+    engancha(function (cod) {
+      if (!cod) return;
+      if (cod.length === LARGO_MATRICULA) { avisa("Eso es una matricula. Dispara al SKU", "amar"); return; }
+      if (cod === limpia(actual.sku)) { avisa("Ese es el SKU teorico, no hay correccion", "amar"); return; }
+      correccion.sku = cod;
+      if (!skusConocidos[cod]) avisa("SKU fuera del listado, se anota igual", "amar");
+      if (correccion.siguiente === "uds") { correccion.siguiente = null; pideUds(); }
+      else verVerificacion(actual);
+    });
+  }
+
+  function pideUds() {
+    pantalla = "corr-uds";
+    document.onclick = null;
+    id("zona").innerHTML =
+      '<div class="rotulo">MATRICULA ' + esc(actual.matricula) + '</div>' +
+      '<h2 style="font-size:21px;margin:6px 0 2px 0">Unidades contadas</h2>' +
+      '<div class="desc">Teoricas: ' + actual.teoricas + '</div>' +
+      '<input type="number" inputmode="numeric" pattern="[0-9]*" id="campoUds" placeholder="0">';
+    id("acciones").innerHTML =
+      '<button class="bt-sec" id="b-atr">Atras</button>' +
+      '<button class="bt-ppal" id="b-acep">Aceptar</button>';
+    id("b-atr").onclick = verOpciones;
+    var acepta = function () {
+      var v = id("campoUds").value;
+      if (v === "") { avisa("Escribe las unidades contadas", "rojo"); id("campoUds").focus(); return; }
+      var n = parseInt(v, 10);
+      if (isNaN(n) || n < 0) { avisa("Cantidad no valida", "rojo"); return; }
+      correccion.uds = n;
+      verVerificacion(actual);
+    };
+    id("b-acep").onclick = acepta;
+    var cu = id("campoUds");
+    cu.focus();
+    cu.onkeydown = function (e) { if (e.key === "Enter" || e.keyCode === 13) { e.preventDefault(); acepta(); } };
+  }
+
+  /* ================= pendientes ================= */
+  function verPendientes() {
+    pantalla = "pendientes";
+    document.onclick = null;
+    var h = "", n = 0;
+    for (var i = 0; i < datos.lineas.length && n < 50; i++) {
+      var l = datos.lineas[i];
+      if (!registro[limpia(l.matricula)]) {
+        n++;
+        h += '<div class="fila-res"><b>' + esc(l.matricula) + '</b> &nbsp; ' + esc(l.descripcion || "") +
+             '<br><span style="color:#5a5a5a">' + esc(agrupa(l.sku)) + ' &middot; ' + l.teoricas + ' ud</span></div>';
+      }
+    }
+    id("zona").innerHTML = n
+      ? ('<div class="desc" style="margin-bottom:6px">' + pendientes() + ' matriculas pendientes</div>' + h)
+      : '<div class="espera"><h2>No queda nada pendiente</h2></div>';
+    id("acciones").innerHTML = '<button class="bt-ppal" id="b-vol">Volver a escanear</button>';
+    id("b-vol").onclick = verEspera;
+  }
+
+  /* ================= resumen y salida ================= */
+  function incidencias() {
+    var out = [];
+    for (var k in registro) {
+      if (!registro.hasOwnProperty(k)) continue;
+      var r = registro[k];
+      if (r.fuera) {
+        out.push({ matricula: r.codigo, skuT: "", skuR: "", udsT: "", udsR: "", estado: r.estado, hora: r.hora });
+        continue;
+      }
+      if (r.estado !== "Corregido") continue;
+      var l = porMatricula[k];
+      if (!l) continue;
+      var q = r.skuReal && r.udsReales !== null ? "SKU y unidades"
+            : (r.skuReal ? "SKU" : "Unidades");
+      out.push({ matricula: l.matricula, skuT: l.sku, skuR: r.skuReal || "",
+                 udsT: l.teoricas, udsR: r.udsReales !== null ? r.udsReales : "",
+                 estado: q, hora: r.hora });
+    }
+    return out;
+  }
+  function csv() {
+    var inc = incidencias();
+    var l = ["matricula;sku_teorico;sku_real;unidades_teoricas;unidades_reales;correccion;fecha"];
+    for (var i = 0; i < inc.length; i++) {
+      var x = inc[i];
+      l.push([x.matricula, x.skuT, x.skuR, x.udsT, x.udsR, x.estado, x.hora].join(";"));
+    }
+    return l.join("\n");
+  }
+  function verResumen() {
+    pantalla = "resumen";
+    document.onclick = null;
+    var inc = incidencias(), hechos = cuenta(registro);
+    var h = '<div class="res-num">' +
+      '<div><b>' + hechos + '</b><span>revisadas</span></div>' +
+      '<div><b>' + (datos.lineas.length - hechos) + '</b><span>pendientes</span></div>' +
+      '<div><b style="color:#c6250e">' + inc.length + '</b><span>correcciones</span></div></div>';
+    for (var i = 0; i < inc.length && i < 60; i++) {
+      var x = inc[i];
+      h += '<div class="fila-res"><b>' + esc(x.matricula) + '</b> <em>' + esc(x.estado) + '</em>';
+      if (x.skuR) h += '<br>SKU ' + esc(agrupa(x.skuT)) + ' &rarr; ' + esc(agrupa(x.skuR));
+      if (x.udsR !== "") h += '<br>Unidades ' + x.udsT + ' &rarr; ' + x.udsR;
+      h += '</div>';
+    }
+    h += '<textarea id="salida" readonly>' + esc(csv()) + '</textarea>';
+    id("zona").innerHTML = h;
+    id("acciones").innerHTML =
+      '<button class="bt-sec" id="b-vol">Seguir</button>' +
+      '<button class="bt-sec" id="b-cop">Copiar</button>' +
+      '<button class="bt-ppal" id="b-des">Descargar</button>';
+    id("b-vol").onclick = verEspera;
+    id("b-cop").onclick = function () {
+      var t = id("salida"); t.select(); t.setSelectionRange(0, 99999);
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(csv()).then(function () { avisa("Correcciones copiadas"); },
+          function () { avisa("Copia el texto a mano", "amar"); });
+      } else {
+        try { document.execCommand("copy"); avisa("Correcciones copiadas"); }
+        catch (e) { avisa("Copia el texto a mano", "amar"); }
+      }
+    };
+    id("b-des").onclick = function () {
+      if (!window.Blob || !window.URL || !URL.createObjectURL) { avisa("Este navegador no descarga ficheros", "rojo"); return; }
+      var b = new Blob(["\ufeff" + csv()], { type: "text/csv;charset=utf-8" });
+      var u = URL.createObjectURL(b), a = document.createElement("a");
+      a.href = u; a.download = "correcciones-" + (datos.inventario || "inv") + ".csv";
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(u); }, 1000);
+      avisa("Fichero descargado");
+    };
+  }
+
+  /* ================= inicio ================= */
+  id("zona").innerHTML = '<div class="espera"><h2>Cargando</h2></div>';
+  abreDB(function () {
+    if (navigator.storage && navigator.storage.persist) { navigator.storage.persist(); }
+    arranca();
+  });
+  document.addEventListener("visibilitychange", function () { if (document.hidden && datos) guarda(); });
+})();
+</script>
+</body>
+</html>

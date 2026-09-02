@@ -1,0 +1,259 @@
+{
+ "inventario": "INV-2026-09",
+ "almacen": "Central",
+ "generado": "2026-09-02T07:30:00",
+ "lineas": [
+  {
+   "matricula": "6011762859",
+   "sku": "01920254400040",
+   "descripcion": "Palet mixto componentes",
+   "teoricas": 120
+  },
+  {
+   "matricula": "6032300933",
+   "sku": "01920418824402",
+   "descripcion": "Caja filtros aire",
+   "teoricas": 120
+  },
+  {
+   "matricula": "6063942516",
+   "sku": "01920254400040",
+   "descripcion": "Palet mixto componentes",
+   "teoricas": 48
+  },
+  {
+   "matricula": "6075401904",
+   "sku": "01920377762359",
+   "descripcion": "Rollo cable electrico",
+   "teoricas": 24
+  },
+  {
+   "matricula": "6091255991",
+   "sku": "01920350324203",
+   "descripcion": "Pack luminarias LED",
+   "teoricas": 240
+  },
+  {
+   "matricula": "6097356745",
+   "sku": "01920364067096",
+   "descripcion": "Caja guantes nitrilo",
+   "teoricas": 300
+  },
+  {
+   "matricula": "6125099503",
+   "sku": "01920336624890",
+   "descripcion": "Palet botellas 1L",
+   "teoricas": 96
+  },
+  {
+   "matricula": "6169107993",
+   "sku": "01920377762359",
+   "descripcion": "Rollo cable electrico",
+   "teoricas": 12
+  },
+  {
+   "matricula": "6228562779",
+   "sku": "01920254400040",
+   "descripcion": "Palet mixto componentes",
+   "teoricas": 60
+  },
+  {
+   "matricula": "6229245687",
+   "sku": "01920295559222",
+   "descripcion": "Bidon aceite hidraulico",
+   "teoricas": 12
+  },
+  {
+   "matricula": "6250875089",
+   "sku": "01920391482559",
+   "descripcion": "Caja rodamientos",
+   "teoricas": 60
+  },
+  {
+   "matricula": "6264557047",
+   "sku": "01920405180472",
+   "descripcion": "Palet placas ceramicas",
+   "teoricas": 24
+  },
+  {
+   "matricula": "6272724777",
+   "sku": "01920322976989",
+   "descripcion": "Caja tornilleria surtida",
+   "teoricas": 48
+  },
+  {
+   "matricula": "6298675143",
+   "sku": "01920336624890",
+   "descripcion": "Palet botellas 1L",
+   "teoricas": 144
+  },
+  {
+   "matricula": "6326573362",
+   "sku": "01920254400040",
+   "descripcion": "Palet mixto componentes",
+   "teoricas": 48
+  },
+  {
+   "matricula": "6350354820",
+   "sku": "01920350324203",
+   "descripcion": "Pack luminarias LED",
+   "teoricas": 180
+  },
+  {
+   "matricula": "6357111100",
+   "sku": "01920254400040",
+   "descripcion": "Palet mixto componentes",
+   "teoricas": 96
+  },
+  {
+   "matricula": "6361735931",
+   "sku": "01920268173370",
+   "descripcion": "Caja carton doble canal",
+   "teoricas": 60
+  },
+  {
+   "matricula": "6415015750",
+   "sku": "01920268173370",
+   "descripcion": "Caja carton doble canal",
+   "teoricas": 12
+  },
+  {
+   "matricula": "6425373532",
+   "sku": "01920350324203",
+   "descripcion": "Pack luminarias LED",
+   "teoricas": 240
+  },
+  {
+   "matricula": "6426731186",
+   "sku": "01920336624890",
+   "descripcion": "Palet botellas 1L",
+   "teoricas": 24
+  },
+  {
+   "matricula": "6429926020",
+   "sku": "01920268173370",
+   "descripcion": "Caja carton doble canal",
+   "teoricas": 60
+  },
+  {
+   "matricula": "6450145315",
+   "sku": "01920391482559",
+   "descripcion": "Caja rodamientos",
+   "teoricas": 96
+  },
+  {
+   "matricula": "6479525745",
+   "sku": "01920309266563",
+   "descripcion": "Saco granza polipropileno",
+   "teoricas": 36
+  },
+  {
+   "matricula": "6480418803",
+   "sku": "01920364067096",
+   "descripcion": "Caja guantes nitrilo",
+   "teoricas": 48
+  },
+  {
+   "matricula": "6504644994",
+   "sku": "01920336624890",
+   "descripcion": "Palet botellas 1L",
+   "teoricas": 300
+  },
+  {
+   "matricula": "6536627338",
+   "sku": "01920254400040",
+   "descripcion": "Palet mixto componentes",
+   "teoricas": 240
+  },
+  {
+   "matricula": "6550705694",
+   "sku": "01920309266563",
+   "descripcion": "Saco granza polipropileno",
+   "teoricas": 12
+  },
+  {
+   "matricula": "6607997443",
+   "sku": "01920391482559",
+   "descripcion": "Caja rodamientos",
+   "teoricas": 48
+  },
+  {
+   "matricula": "6681238488",
+   "sku": "01920254400040",
+   "descripcion": "Palet mixto componentes",
+   "teoricas": 180
+  },
+  {
+   "matricula": "6732375074",
+   "sku": "01920364067096",
+   "descripcion": "Caja guantes nitrilo",
+   "teoricas": 48
+  },
+  {
+   "matricula": "6785865426",
+   "sku": "01920418824402",
+   "descripcion": "Caja filtros aire",
+   "teoricas": 36
+  },
+  {
+   "matricula": "6793404884",
+   "sku": "01920377762359",
+   "descripcion": "Rollo cable electrico",
+   "teoricas": 240
+  },
+  {
+   "matricula": "6813939801",
+   "sku": "01920268173370",
+   "descripcion": "Caja carton doble canal",
+   "teoricas": 36
+  },
+  {
+   "matricula": "6835919667",
+   "sku": "01920391482559",
+   "descripcion": "Caja rodamientos",
+   "teoricas": 60
+  },
+  {
+   "matricula": "6855795335",
+   "sku": "01920350324203",
+   "descripcion": "Pack luminarias LED",
+   "teoricas": 36
+  },
+  {
+   "matricula": "6893032820",
+   "sku": "01920364067096",
+   "descripcion": "Caja guantes nitrilo",
+   "teoricas": 24
+  },
+  {
+   "matricula": "6902174582",
+   "sku": "01920268173370",
+   "descripcion": "Caja carton doble canal",
+   "teoricas": 300
+  },
+  {
+   "matricula": "6904549243",
+   "sku": "01920295559222",
+   "descripcion": "Bidon aceite hidraulico",
+   "teoricas": 144
+  },
+  {
+   "matricula": "6909791941",
+   "sku": "01920391482559",
+   "descripcion": "Caja rodamientos",
+   "teoricas": 12
+  },
+  {
+   "matricula": "6928071501",
+   "sku": "01920418824402",
+   "descripcion": "Caja filtros aire",
+   "teoricas": 180
+  },
+  {
+   "matricula": "6944425699",
+   "sku": "01920295559222",
+   "descripcion": "Bidon aceite hidraulico",
+   "teoricas": 180
+  }
+ ]
+}
