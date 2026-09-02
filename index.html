@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Diagnostico del terminal</title>
+<style>
+/* Sin fuentes externas: la red del almacen puede bloquear cualquier CDN. */
+* { box-sizing: border-box; -webkit-tap-highlight-color: rgba(255,212,0,.4); }
+body {
+  margin: 0;
+  padding: 0 0 40px 0;
+  background: #ffffff;
+  color: #141414;
+  font-family: Roboto, "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+  font-size: 17px;
+  line-height: 1.45;
+}
+header {
+  background: #141414;
+  color: #ffffff;
+  padding: 18px 16px 16px 16px;
+  border-bottom: 6px solid #ffd400;
+}
+header h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -.01em; }
+header p { margin: 6px 0 0 0; font-size: 14px; color: #b9b9b9; }
+section { padding: 22px 16px 4px 16px; border-bottom: 1px solid #e8e6e1; }
+h2 {
+  margin: 0 0 4px 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #6a6a6a;
+}
+h2 b { color: #141414; font-size: 19px; display: block; font-weight: 700; }
+.nota { font-size: 14px; color: #5a5a5a; margin: 8px 0 14px 0; }
+.fila {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 9px 0;
+  border-top: 1px solid #f0eeea;
+  font-size: 15px;
+}
+.fila:first-of-type { border-top: 0; }
+.marca {
+  flex: 0 0 24px;
+  font-weight: 700;
+  font-size: 17px;
+  line-height: 1.3;
+}
+.ok .marca { color: #0b7a3b; }
+.mal .marca { color: #c6250e; }
+.avi .marca { color: #a8720a; }
+.fila .txt { flex: 1 1 auto; }
+.fila .txt em { font-style: normal; color: #5a5a5a; display: block; font-size: 13px; margin-top: 2px; }
+.dato {
+  font-family: "Roboto Mono", Consolas, monospace;
+  font-size: 13px;
+  background: #f6f5f2;
+  border: 1px solid #e8e6e1;
+  padding: 8px 10px;
+  word-break: break-all;
+  margin: 4px 0 12px 0;
+}
+button {
+  font-family: inherit;
+  font-size: 17px;
+  font-weight: 700;
+  border: 0;
+  background: #141414;
+  color: #fff;
+  padding: 16px 18px;
+  width: 100%;
+  margin: 6px 0;
+  cursor: pointer;
+  min-height: 56px;
+}
+button.amarillo { background: #ffd400; color: #141414; }
+button:active { transform: translateY(1px); }
+button:focus-visible { outline: 4px solid #0b7a3b; outline-offset: 2px; }
+#escaneo {
+  font-size: 24px;
+  font-family: "Roboto Mono", Consolas, monospace;
+  width: 100%;
+  padding: 18px 14px;
+  border: 3px solid #141414;
+  background: #fffbe6;
+  min-height: 64px;
+}
+#escaneo:focus { border-color: #0b7a3b; outline: 0; background: #fff; }
+.veredicto {
+  padding: 14px;
+  margin: 12px 0;
+  font-weight: 700;
+  font-size: 16px;
+  border-left: 8px solid #141414;
+  background: #f6f5f2;
+}
+.veredicto.ok { border-color: #0b7a3b; background: #eaf6ee; }
+.veredicto.mal { border-color: #c6250e; background: #fdeeeb; }
+.veredicto.avi { border-color: #a8720a; background: #fdf6e3; }
+.dianas { display: flex; gap: 10px; align-items: flex-end; margin: 10px 0 4px 0; }
+.diana {
+  background: #ffd400;
+  border: 2px solid #141414;
+  font-weight: 700;
+  text-align: center;
+  padding: 0;
+  margin: 0;
+  min-height: 0;
+  width: auto;
+  color: #141414;
+  font-size: 13px;
+}
+.d1 { width: 34px; height: 34px; }
+.d2 { width: 48px; height: 48px; }
+.d3 { width: 64px; height: 64px; }
+.pie { padding: 20px 16px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Diagnostico del terminal</h1>
+  <p>Abre esta pagina en el PDA, no en el ordenador. Recorre las cinco pruebas y al final copia el informe.</p>
+</header>
+
+<section id="s-nav">
+  <h2>Prueba 1<b>Navegador del terminal</b></h2>
+  <div id="r-nav"></div>
+  <div class="dato" id="d-ua">-</div>
+</section>
+
+<section id="s-cap">
+  <h2>Prueba 2<b>Capacidades disponibles</b></h2>
+  <p class="nota">Si algo sale en rojo, hay que rehacer esa parte con una tecnica alternativa.</p>
+  <div id="r-cap"></div>
+</section>
+
+<section id="s-per">
+  <h2>Prueba 3<b>Persistencia tras reinicio</b></h2>
+  <p class="nota">Esta es la prueba mas importante. Muchos perfiles corporativos borran los datos del navegador al cerrar sesion. Si eso pasa aqui, el operario perderia el conteo al reiniciarse el aparato.</p>
+  <div id="r-per"></div>
+  <button class="amarillo" id="b-marca">Escribir marca de prueba</button>
+  <p class="nota"><b>Ahora:</b> reinicia el PDA por completo, vuelve a abrir esta pagina y mira si la marca sigue aqui. Repitelo tambien cerrando y abriendo la sesion de usuario del terminal.</p>
+</section>
+
+<section id="s-esc">
+  <h2>Prueba 4<b>Lector de codigos</b></h2>
+  <p class="nota">Toca el recuadro y dispara el lector contra cualquier etiqueta. No escribas a mano.</p>
+  <input type="text" id="escaneo" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Dispara aqui">
+  <div id="r-esc"></div>
+  <button id="b-esc-reset">Borrar y repetir</button>
+</section>
+
+<section id="s-pan">
+  <h2>Prueba 5<b>Pantalla y pulsacion con guante</b></h2>
+  <div id="r-pan"></div>
+  <p class="nota">Con el guante puesto, intenta acertar cada cuadrado tres veces. El mas pequeno que aciertes siempre marca el tamano minimo de boton.</p>
+  <div class="dianas">
+    <button class="diana d1" id="t1">34</button>
+    <button class="diana d2" id="t2">48</button>
+    <button class="diana d3" id="t3">64</button>
+  </div>
+  <div id="r-tap"></div>
+</section>
+
+<div class="pie">
+  <button id="b-informe">Copiar informe completo</button>
+  <div class="dato" id="d-informe" style="display:none"></div>
+</div>
+
+<script>
+/* ES5 deliberadamente: esta pagina debe arrancar incluso en un WebView antiguo
+   para poder informar de que es antiguo. */
+(function () {
+  "use strict";
+
+  var informe = [];
+  function apunta(clave, valor) { informe.push(clave + ": " + valor); }
+
+  function fila(estado, texto, detalle) {
+    var marca = estado === "ok" ? "OK" : (estado === "mal" ? "X" : "!");
+    var d = detalle ? '<em>' + detalle + '</em>' : '';
+    return '<div class="fila ' + estado + '"><div class="marca">' + marca +
+           '</div><div class="txt">' + texto + d + '</div></div>';
+  }
+  function veredicto(estado, texto) {
+    return '<div class="veredicto ' + estado + '">' + texto + '</div>';
+  }
+  function id(x) { return document.getElementById(x); }
+
+  /* ---------- Prueba 1: navegador ---------- */
+  var ua = navigator.userAgent;
+  id("d-ua").textContent = ua;
+  apunta("UserAgent", ua);
+
+  var esWebView = /; wv\)/.test(ua) || /Version\/[\d.]+ Chrome/.test(ua);
+  var mCr = ua.match(/Chrom(?:e|ium)\/(\d+)/);
+  var verCr = mCr ? parseInt(mCr[1], 10) : 0;
+  var mAn = ua.match(/Android (\d+(?:\.\d+)?)/);
+  var htmlNav = "";
+
+  if (verCr) {
+    htmlNav += fila(verCr >= 90 ? "ok" : (verCr >= 60 ? "avi" : "mal"),
+      "Motor Chromium version " + verCr,
+      verCr >= 90 ? "Soporta todo lo que necesitamos." :
+      (verCr >= 60 ? "Funciona, pero hay que evitar sintaxis reciente." :
+                     "Demasiado antiguo. Habria que programar con muchas limitaciones."));
+  } else {
+    htmlNav += fila("avi", "No se reconoce el motor", "Revisa la cadena de abajo a mano.");
+  }
+  htmlNav += fila(esWebView ? "avi" : "ok",
+    esWebView ? "Parece un WebView incrustado" : "Parece un navegador completo",
+    esWebView ? "El WebView de una app no siempre se actualiza con el sistema." : "");
+  if (mAn) htmlNav += fila("ok", "Android " + mAn[1], "");
+  htmlNav += fila("ok", "Idioma del sistema: " + (navigator.language || "?"), "");
+  id("r-nav").innerHTML = htmlNav;
+  apunta("Chromium", verCr || "desconocido");
+  apunta("Android", mAn ? mAn[1] : "n/a");
+  apunta("WebView", esWebView ? "probable" : "no");
+
+  /* ---------- Prueba 2: capacidades ---------- */
+  function prueba(nombre, fn, critico, detalle) {
+    var ok = false;
+    try { ok = !!fn(); } catch (e) { ok = false; }
+    apunta(nombre, ok ? "si" : "NO");
+    return fila(ok ? "ok" : (critico ? "mal" : "avi"), nombre, ok ? "" : detalle);
+  }
+  var htmlCap = "";
+  htmlCap += prueba("Almacenamiento IndexedDB", function () { return window.indexedDB; }, true,
+    "Sin esto habria que tirar solo de localStorage, con menos capacidad.");
+  htmlCap += prueba("Almacenamiento localStorage", function () {
+    localStorage.setItem("__p", "1"); localStorage.removeItem("__p"); return true;
+  }, true, "Suele significar que el modo incognito esta forzado por politica.");
+  htmlCap += prueba("Descarga de ficheros (Blob)", function () { return window.Blob && window.URL && URL.createObjectURL; }, false,
+    "Habria que exportar copiando texto al portapapeles.");
+  htmlCap += prueba("Copiar al portapapeles", function () { return navigator.clipboard && navigator.clipboard.writeText; }, false,
+    "Se puede sustituir por seleccion manual del texto.");
+  htmlCap += prueba("Lectura de ficheros locales", function () { return window.FileReader; }, false, "");
+  htmlCap += prueba("Sintaxis moderna de JavaScript", function () {
+    /* eval evita que un motor antiguo rompa el fichero entero al analizarlo */
+    return eval("(function(){ const a = [1,2]; const [b] = a; return b === 1; })()");
+  }, false, "El codigo definitivo debera escribirse en sintaxis antigua, como esta pagina.");
+  htmlCap += prueba("Diseno con CSS Grid", function () {
+    return window.CSS && CSS.supports && CSS.supports("display", "grid");
+  }, false, "Habria que maquetar con flexbox.");
+  htmlCap += prueba("Marcar el almacenamiento como persistente", function () {
+    return navigator.storage && navigator.storage.persist;
+  }, false, "El sistema podria borrar los datos si le falta espacio.");
+  id("r-cap").innerHTML = htmlCap;
+
+  /* ---------- Prueba 3: persistencia ---------- */
+  var CLAVE = "diag_marca";
+  function pintaPersistencia() {
+    var html = "";
+    var ls = null;
+    try { ls = localStorage.getItem(CLAVE); } catch (e) { ls = null; }
+    if (ls) {
+      html += fila("ok", "Marca encontrada en localStorage", "Escrita el " + ls);
+    } else {
+      html += fila("avi", "Sin marca en localStorage", "Todavia no la has escrito, o se ha borrado.");
+    }
+    id("r-per").innerHTML = html + '<div id="r-idb"></div>';
+    apunta("localStorage tras reinicio", ls ? ls : "vacio");
+
+    /* IndexedDB */
+    if (!window.indexedDB) {
+      id("r-idb").innerHTML = fila("mal", "IndexedDB no disponible", "");
+      return;
+    }
+    var req = indexedDB.open("diagnostico", 1);
+    req.onupgradeneeded = function (ev) {
+      ev.target.result.createObjectStore("marcas", { keyPath: "id" });
+    };
+    req.onerror = function () {
+      id("r-idb").innerHTML = fila("mal", "No se puede abrir IndexedDB",
+        "Probablemente el navegador esta en modo privado o con almacenamiento bloqueado.");
+      apunta("IndexedDB", "bloqueado");
+    };
+    req.onsuccess = function (ev) {
+      var db = ev.target.result;
+      var g = db.transaction("marcas", "readonly").objectStore("marcas").get(1);
+      g.onsuccess = function () {
+        var v = g.result;
+        id("r-idb").innerHTML = v
+          ? fila("ok", "Marca encontrada en IndexedDB", "Escrita el " + v.fecha)
+          : fila("avi", "Sin marca en IndexedDB", "Todavia no la has escrito, o se ha borrado.");
+        apunta("IndexedDB tras reinicio", v ? v.fecha : "vacio");
+      };
+    };
+  }
+
+  id("b-marca").onclick = function () {
+    var ahora = new Date().toLocaleString("es-ES");
+    try { localStorage.setItem(CLAVE, ahora); } catch (e) {}
+    if (window.indexedDB) {
+      var req = indexedDB.open("diagnostico", 1);
+      req.onupgradeneeded = function (ev) {
+        ev.target.result.createObjectStore("marcas", { keyPath: "id" });
+      };
+      req.onsuccess = function (ev) {
+        var db = ev.target.result;
+        db.transaction("marcas", "readwrite").objectStore("marcas").put({ id: 1, fecha: ahora });
+        setTimeout(pintaPersistencia, 250);
+      };
+    } else {
+      pintaPersistencia();
+    }
+    if (navigator.storage && navigator.storage.persist) { navigator.storage.persist(); }
+    this.textContent = "Marca escrita a las " + ahora + " - ahora reinicia";
+  };
+  pintaPersistencia();
+
+  /* ---------- Prueba 4: lector ---------- */
+  var caja = id("escaneo");
+  var tiempos = [];
+  var teclas = [];
+
+  caja.addEventListener("keydown", function (e) {
+    tiempos.push(Date.now());
+    teclas.push(e.key || String.fromCharCode(e.keyCode));
+    if ((e.key === "Enter" || e.keyCode === 13) && caja.value.length > 0) {
+      analiza(true);
+    }
+  });
+  caja.addEventListener("input", function () {
+    clearTimeout(caja._t);
+    caja._t = setTimeout(function () { if (caja.value.length > 0) analiza(false); }, 400);
+  });
+
+  function analiza(conEnter) {
+    var texto = caja.value;
+    var n = tiempos.length;
+    var total = n > 1 ? tiempos[n - 1] - tiempos[0] : 0;
+    var media = n > 1 ? Math.round(total / (n - 1)) : 0;
+    var html = "";
+
+    html += '<div class="dato">Leido: <b>' + (texto || "(vacio)") + '</b><br>' +
+            'Caracteres: ' + texto.length + ' &middot; Tiempo total: ' + total + ' ms &middot; Media entre teclas: ' + media + ' ms</div>';
+
+    if (media <= 30 && n > 3) {
+      html += veredicto("ok", "El lector emite como teclado y va rapido. Se puede distinguir del tecleo manual por la velocidad.");
+    } else if (n > 3) {
+      html += veredicto("avi", "Las pulsaciones llegan lentas (" + media + " ms). Habra que separar escaneo y tecleo por otro medio, no por velocidad.");
+    }
+    html += conEnter
+      ? veredicto("ok", "Termina con Enter. El salto al siguiente articulo puede ser automatico.")
+      : veredicto("avi", "No se ha detectado Enter final. Configura el sufijo en los ajustes del lector, o habra que validar por pausa.");
+
+    var raro = texto.replace(/[A-Za-z0-9\-_.]/g, "");
+    if (raro.length) {
+      html += veredicto("avi", "Aparecen caracteres inesperados: " + raro + ". Puede ser un prefijo configurado en el lector.");
+    }
+    apunta("Escaner", texto.length + " car, " + media + " ms/tecla, Enter=" + conEnter);
+    id("r-esc").innerHTML = html;
+  }
+
+  id("b-esc-reset").onclick = function () {
+    caja.value = ""; tiempos = []; teclas = [];
+    id("r-esc").innerHTML = "";
+    caja.focus();
+  };
+
+  /* ---------- Prueba 5: pantalla ---------- */
+  var htmlPan = "";
+  var anchoCss = window.innerWidth, altoCss = window.innerHeight;
+  var dpr = window.devicePixelRatio || 1;
+  htmlPan += fila(anchoCss >= 320 ? "ok" : "avi",
+    "Area util " + anchoCss + " x " + altoCss + " px",
+    "Densidad " + dpr + "x. El diseno se ajustara a este ancho.");
+  htmlPan += fila("ok", "Puntos tactiles: " + (navigator.maxTouchPoints || "?"), "");
+  htmlPan += fila(navigator.onLine ? "ok" : "avi",
+    navigator.onLine ? "Con conexion en este momento" : "Sin conexion en este momento",
+    "Anota si hay zonas del almacen sin cobertura.");
+  id("r-pan").innerHTML = htmlPan;
+  apunta("Pantalla", anchoCss + "x" + altoCss + " @" + dpr + "x");
+
+  var toques = { t1: 0, t2: 0, t3: 0 };
+  function tap(k) {
+    return function () {
+      toques[k]++;
+      var tam = { t1: "34", t2: "48", t3: "64" };
+      id("r-tap").innerHTML = fila("ok",
+        "Aciertos: 34px = " + toques.t1 + ", 48px = " + toques.t2 + ", 64px = " + toques.t3,
+        "Anota cual fallas con guante.");
+      apunta("Dianas", "34:" + toques.t1 + " 48:" + toques.t2 + " 64:" + toques.t3);
+      void tam;
+    };
+  }
+  id("t1").onclick = tap("t1");
+  id("t2").onclick = tap("t2");
+  id("t3").onclick = tap("t3");
+
+  /* ---------- Informe ---------- */
+  id("b-informe").onclick = function () {
+    var texto = "DIAGNOSTICO PDA - " + new Date().toLocaleString("es-ES") + "\n\n" + informe.join("\n");
+    var caja2 = id("d-informe");
+    caja2.style.display = "block";
+    caja2.textContent = texto;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(texto).then(function () {
+        id("b-informe").textContent = "Informe copiado al portapapeles";
+      }, function () {
+        id("b-informe").textContent = "Copia el texto de abajo a mano";
+      });
+    } else {
+      id("b-informe").textContent = "Copia el texto de abajo a mano";
+    }
+  };
+
+  /* Mantener el foco en el campo de escaneo mientras se esta en esa prueba */
+  caja.focus();
+})();
+</script>
+</body>
+</html>
