@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Que deja pasar la red</title>
+<style>
+* { box-sizing: border-box; -webkit-tap-highlight-color: rgba(255,212,0,.4); }
+body {
+  margin: 0; padding: 0 0 50px 0; background: #fff; color: #141414;
+  font-family: Roboto, "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+  font-size: 16px; line-height: 1.5;
+}
+header { background: #141414; color: #fff; padding: 18px 16px 16px 16px; border-bottom: 6px solid #ffd400; }
+header h1 { margin: 0; font-size: 21px; }
+header p { margin: 6px 0 0 0; font-size: 13.5px; color: #b9b9b9; max-width: 620px; }
+main { max-width: 780px; padding: 0 16px; }
+section { padding: 18px 0 4px 0; border-bottom: 1px solid #e8e6e1; }
+h2 { font-size: 12px; color: #6a6a6a; margin: 0 0 2px 0; letter-spacing: .07em; }
+h2 b { display: block; color: #141414; font-size: 18px; letter-spacing: 0; }
+.nota { font-size: 13.5px; color: #5a5a5a; margin: 6px 0 12px 0; }
+
+label { display: block; font-size: 13px; font-weight: 700; margin: 10px 0 3px 0; }
+input[type=text] {
+  font-family: "Roboto Mono", Consolas, monospace; font-size: 14px;
+  padding: 11px 10px; border: 2px solid #141414; width: 100%;
+}
+button {
+  font-family: inherit; font-size: 17px; font-weight: 700; border: 0;
+  background: #141414; color: #fff; padding: 15px 18px; cursor: pointer;
+  min-height: 54px; width: 100%; margin: 12px 0 4px 0;
+}
+button.amarillo { background: #ffd400; color: #141414; }
+button:disabled { background: #d8d6d1; color: #8a8a8a; }
+button:focus-visible { outline: 4px solid #0b7a3b; outline-offset: 2px; }
+
+.res { border-left: 8px solid #d8d6d1; background: #f6f5f2; padding: 11px 13px; margin-bottom: 7px; }
+.res.usable { border-color: #0b7a3b; background: #eaf6ee; }
+.res.cors   { border-color: #a8720a; background: #fdf6e3; }
+.res.bloq   { border-color: #c6250e; background: #fdeeeb; }
+.res.esp    { border-color: #b9b7b2; }
+.res .cab { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.res .nom { font-weight: 700; font-size: 15.5px; }
+.res .ms { font-family: "Roboto Mono", Consolas, monospace; font-size: 12px; color: #5a5a5a; white-space: nowrap; }
+.res .ver { font-size: 13.5px; font-weight: 700; margin-top: 3px; }
+.res.usable .ver { color: #0b7a3b; }
+.res.cors .ver { color: #a8720a; }
+.res.bloq .ver { color: #c6250e; }
+.res .det { font-size: 13px; color: #4a4a4a; margin-top: 3px; }
+.res .url { font-family: "Roboto Mono", Consolas, monospace; font-size: 11.5px; color: #7a7a7a; word-break: break-all; margin-top: 3px; }
+.grupo { font-size: 12px; letter-spacing: .07em; color: #6a6a6a; margin: 16px 0 6px 0; font-weight: 700; }
+.concl { padding: 14px; margin: 14px 0; border-left: 8px solid #141414; background: #f6f5f2; font-size: 14.5px; }
+.concl b { display: block; font-size: 16px; margin-bottom: 4px; }
+.dato {
+  font-family: "Roboto Mono", Consolas, monospace; font-size: 12px;
+  background: #f6f5f2; border: 1px solid #e8e6e1; padding: 8px 10px;
+  word-break: break-all; margin-top: 8px; white-space: pre-wrap;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Que deja pasar la red</h1>
+  <p>Prueba desde este terminal a que servicios externos se puede llegar. Cuando un intento falla,
+  la pagina lo repite de otra forma para distinguir si lo bloquea el proxy o si solo es un problema
+  de permisos de origen, que tiene arreglo.</p>
+</header>
+
+<main>
+
+<section>
+  <h2>Antes de empezar<b>Dos direcciones tuyas</b></h2>
+  <p class="nota">Opcionales, pero dan mucha informacion. Si no las sabes, deja los recuadros vacios.</p>
+  <label for="tenant">Tu SharePoint (solo el nombre del tenant)</label>
+  <input type="text" id="tenant" placeholder="tuempresa" autocapitalize="off" autocorrect="off" spellcheck="false">
+  <label for="propia">Otra direccion que quieras probar</label>
+  <input type="text" id="propia" placeholder="https://..." autocapitalize="off" autocorrect="off" spellcheck="false">
+  <button id="bIr" class="amarillo">Probar todos los destinos</button>
+  <p class="nota" id="avance"></p>
+</section>
+
+<section id="sRes" style="display:none">
+  <h2>Resultado<b>Destino por destino</b></h2>
+  <div id="lista"></div>
+</section>
+
+<section id="sConcl" style="display:none">
+  <h2>Y entonces<b>Que puedes usar</b></h2>
+  <div id="concl"></div>
+  <button id="bInf">Copiar el informe</button>
+  <div class="dato" id="inf" style="display:none"></div>
+</section>
+
+</main>
+
+<script>
+/* Sintaxis antigua a proposito, igual que el resto de la herramienta. */
+(function () {
+  "use strict";
+
+  var TIEMPO = 9000;
+
+  function id(x) { return document.getElementById(x); }
+  function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+
+  function destinos() {
+    var d = [
+      { g: "Microsoft", n: "Inicio de sesion corporativo", clave: "login",
+        u: "https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration",
+        q: "Identificar al operario sin que teclee usuario y contrasena." },
+      { g: "Microsoft", n: "Microsoft Graph", clave: "graph",
+        u: "https://graph.microsoft.com/v1.0/me",
+        q: "Leer y escribir listas de SharePoint desde la aplicacion. Es la mejor opcion si responde.",
+        nota401: "Un 401 aqui es buena noticia: significa que la respuesta llega y solo falta autenticarse." },
+      { g: "Microsoft", n: "Power Automate", clave: "logic",
+        u: "https://prod-00.westeurope.logic.azure.com/",
+        q: "Un flujo con disparador HTTP haciendo de puente hacia SharePoint." },
+      { g: "GitHub", n: "API de GitHub", clave: "ghapi",
+        u: "https://api.github.com/rate_limit",
+        q: "Guardar el inventario en un repositorio privado, sin depender de nadie de sistemas." },
+      { g: "GitHub", n: "Ficheros en bruto de GitHub", clave: "ghraw",
+        u: "https://raw.githubusercontent.com/github/gitignore/main/README.md",
+        q: "Descargar el listado del dia sin pasarlo a mano al terminal." },
+      { g: "Google", n: "Firestore", clave: "fire",
+        u: "https://firestore.googleapis.com/v1/projects/prueba/databases/(default)/documents",
+        q: "Resolver por fin por que fallaba Firebase." },
+      { g: "Google", n: "Autenticacion de Firebase", clave: "fireauth",
+        u: "https://identitytoolkit.googleapis.com/v1/projects",
+        q: "La otra mitad de Firebase." },
+      { g: "Google", n: "Apps Script", clave: "gas",
+        u: "https://script.google.com/",
+        q: "Un script publicado como endpoint, alternativa ligera a Power Automate." }
+    ];
+    var t = id("tenant").value.trim().replace(/^https?:\/\//, "").replace(/\..*$/, "");
+    if (t) {
+      d.splice(3, 0, { g: "Microsoft", n: "Tu SharePoint", clave: "sp",
+        u: "https://" + t + ".sharepoint.com/_api/web",
+        q: "Hablar con SharePoint directamente desde la aplicacion.",
+        notaCors: "SharePoint no autoriza otros origenes por diseno, asi que aqui lo unico que importa es si se alcanza." });
+    }
+    var p = id("propia").value.trim();
+    if (p) {
+      if (!/^https?:\/\//.test(p)) p = "https://" + p;
+      d.push({ g: "Tuya", n: "Tu direccion", clave: "propia", u: p, q: "La que has escrito arriba." });
+    }
+    return d;
+  }
+
+  function conLimite(prom, ms) {
+    return new Promise(function (res, rec) {
+      var listo = false;
+      var t = setTimeout(function () { if (!listo) { listo = true; rec(new Error("sin respuesta en " + ms + " ms")); } }, ms);
+      prom.then(function (v) { if (!listo) { listo = true; clearTimeout(t); res(v); } },
+                function (e) { if (!listo) { listo = true; clearTimeout(t); rec(e); } });
+    });
+  }
+
+  /* Un fallo de fetch no distingue entre proxy y CORS. El reintento en modo
+     no-cors si lo separa: si responde, el destino se alcanza. */
+  function sondea(d, cb) {
+    var t0 = Date.now();
+    conLimite(fetch(d.u, { mode: "cors", cache: "no-store" }), TIEMPO).then(function (r) {
+      return r.text().then(function (b) {
+        cb({ tipo: "usable", ms: Date.now() - t0, status: r.status, cuerpo: b.substring(0, 300) });
+      }, function () {
+        cb({ tipo: "usable", ms: Date.now() - t0, status: r.status, cuerpo: "" });
+      });
+    })["catch"](function (e1) {
+      var t1 = Date.now();
+      conLimite(fetch(d.u, { mode: "no-cors", cache: "no-store" }), TIEMPO).then(function () {
+        cb({ tipo: "cors", ms: Date.now() - t1, err: e1.message });
+      })["catch"](function (e2) {
+        cb({ tipo: "bloq", ms: Date.now() - t1, err: e2.message });
+      });
+    });
+  }
+
+  /* Algunos proxies contestan 200 con su propia pagina de bloqueo. */
+  function pareceProxy(cuerpo) {
+    if (!cuerpo) return false;
+    var c = cuerpo.toLowerCase();
+    return c.indexOf("<html") !== -1 &&
+      (c.indexOf("blocked") !== -1 || c.indexOf("bloque") !== -1 || c.indexOf("denied") !== -1 ||
+       c.indexOf("forbidden by") !== -1 || c.indexOf("proxy") !== -1 || c.indexOf("filtrad") !== -1);
+  }
+
+  var resultados = [], informe = [];
+
+  function pinta(d, r, i) {
+    var clase = r.tipo, ver, det = "";
+    if (r.tipo === "usable" && pareceProxy(r.cuerpo)) {
+      clase = "bloq"; r.tipo = "proxy";
+      ver = "Contesta el proxy, no el servicio";
+      det = "Llega una pagina de bloqueo en vez de la respuesta esperada.";
+    } else if (r.tipo === "usable") {
+      ver = "Alcanzable y utilizable desde codigo";
+      det = "Respuesta HTTP " + r.status + ", legible por la aplicacion." +
+            (r.status === 401 && d.nota401 ? " " + d.nota401 : "");
+    } else if (r.tipo === "cors") {
+      ver = "Se alcanza, pero no autoriza a esta pagina";
+      det = (d.notaCors || "El servidor responde, pero no permite que un origen distinto lea la respuesta. " +
+             "Tiene arreglo si controlas el servidor o si usas su metodo de autenticacion.");
+    } else {
+      ver = "Bloqueado";
+      det = "Ni siquiera se llega al servidor. " + esc(r.err || "");
+    }
+    var h = '<div class="res ' + clase + '">' +
+      '<div class="cab"><span class="nom">' + esc(d.n) + '</span><span class="ms">' + r.ms + ' ms</span></div>' +
+      '<div class="ver">' + ver + '</div>' +
+      '<div class="det">' + det + '</div>' +
+      '<div class="det" style="color:#6a6a6a">' + esc(d.q) + '</div>' +
+      '<div class="url">' + esc(d.u) + '</div></div>';
+    id("r" + i).outerHTML = h.replace('<div class="res', '<div id="r' + i + '" class="res');
+    informe.push(d.n + " [" + d.clave + "]: " + r.tipo + " (" + r.ms + " ms" +
+                 (r.status ? ", HTTP " + r.status : "") + ")");
+    resultados.push({ clave: d.clave, tipo: r.tipo });
+  }
+
+  function conclusiones() {
+    function t(c) { for (var i = 0; i < resultados.length; i++) if (resultados[i].clave === c) return resultados[i].tipo; return null; }
+    var h = "";
+
+    if (t("graph") === "usable") {
+      h += '<div class="concl" style="border-color:#0b7a3b;background:#eaf6ee"><b>Microsoft Graph responde</b>' +
+        'Es el mejor resultado posible. La aplicacion HTML puede leer y escribir listas de SharePoint ' +
+        'directamente, sin mover ficheros y sin SPFx. Solo hace falta que el administrador registre una ' +
+        'aplicacion en Entra ID, que es rellenar un formulario, no desplegar un proyecto.</div>';
+    }
+    if (t("ghapi") === "usable") {
+      h += '<div class="concl" style="border-color:#0b7a3b;background:#eaf6ee"><b>La API de GitHub responde</b>' +
+        'Puedes guardar el listado y las correcciones en un repositorio privado sin pedir permiso a nadie. ' +
+        'Resuelve las dos direcciones y desaparece el trasiego de ficheros. A cambio, los datos del almacen ' +
+        'viven en servidores de GitHub con un token guardado en el terminal.</div>';
+    }
+    if (t("ghraw") === "usable" && t("ghapi") !== "usable") {
+      h += '<div class="concl" style="border-color:#a8720a;background:#fdf6e3"><b>Se puede descargar, pero no subir</b>' +
+        'El listado llegaria solo al terminal cada dia. Las correcciones seguirian volviendo por CSV, ' +
+        'que es la parte facil.</div>';
+    }
+    if (t("fire") === "usable" || t("fireauth") === "usable") {
+      h += '<div class="concl" style="border-color:#a8720a;background:#fdf6e3"><b>Firebase si se alcanza</b>' +
+        'Entonces lo de hace unos dias no era la red. Merece la pena mirar la consola del navegador ' +
+        'en aquella web: probablemente eran las reglas de seguridad o la configuracion del proyecto.</div>';
+    }
+    if (t("logic") === "usable" || t("logic") === "cors") {
+      h += '<div class="concl"><b>Power Automate se alcanza</b>' +
+        'Un flujo con disparador HTTP puede hacer de puente hacia SharePoint. Es rapido de montar, ' +
+        'pero la direccion del flujo lleva la firma incrustada, asi que solo con repositorio privado.</div>';
+    }
+    if (t("sp") === "cors") {
+      h += '<div class="concl"><b>Tu SharePoint se alcanza</b>' +
+        'Que no autorice a esta pagina es lo esperado y no es un fallo. Significa que el camino hacia ' +
+        'SharePoint pasa por Graph o por SPFx, no por llamadas directas.</div>';
+    }
+
+    var nada = true;
+    for (var i = 0; i < resultados.length; i++) {
+      if (resultados[i].tipo === "usable" && resultados[i].clave !== "propia") { nada = false; break; }
+    }
+    if (nada) {
+      h += '<div class="concl" style="border-color:#c6250e;background:#fdeeeb"><b>No hay ningun destino utilizable</b>' +
+        'La red no deja hablar con nada externo desde codigo. Entonces las opciones reales son dos: ' +
+        'seguir con el fichero a mano, o irte a Power Apps. Con inventario diario y tres operarios, ' +
+        'Power Apps.</div>';
+    }
+    id("concl").innerHTML = h;
+    id("sConcl").style.display = "block";
+  }
+
+  id("bIr").onclick = function () {
+    var d = destinos();
+    resultados = []; informe = [];
+    this.disabled = true;
+    id("sRes").style.display = "block";
+    id("sConcl").style.display = "none";
+
+    var h = "", gAct = "";
+    for (var i = 0; i < d.length; i++) {
+      if (d[i].g !== gAct) { gAct = d[i].g; h += '<div class="grupo">' + esc(gAct.toUpperCase()) + '</div>'; }
+      h += '<div id="r' + i + '" class="res esp"><div class="cab"><span class="nom">' + esc(d[i].n) +
+           '</span><span class="ms">...</span></div><div class="det">Probando</div></div>';
+    }
+    id("lista").innerHTML = h;
+
+    var hechos = 0;
+    for (var j = 0; j < d.length; j++) {
+      (function (dd, k) {
+        sondea(dd, function (r) {
+          pinta(dd, r, k);
+          hechos++;
+          id("avance").textContent = hechos + " de " + d.length + " destinos probados";
+          if (hechos === d.length) { conclusiones(); id("bIr").disabled = false; }
+        });
+      })(d[j], j);
+    }
+  };
+
+  id("bInf").onclick = function () {
+    var t = "QUE DEJA PASAR LA RED - " + new Date().toLocaleString("es-ES") + "\n" +
+            "Desde: " + location.href + "\n\n" + informe.join("\n");
+    var c = id("inf");
+    c.style.display = "block"; c.textContent = t;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(t).then(
+        function () { id("bInf").textContent = "Informe copiado"; },
+        function () { id("bInf").textContent = "Copia el texto de abajo"; });
+    } else { id("bInf").textContent = "Copia el texto de abajo"; }
+  };
+})();
+</script>
+</body>
+</html>
